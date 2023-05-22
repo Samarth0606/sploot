@@ -1,4 +1,3 @@
-
 const mongoose = require('mongoose');
 
 let articleSchema = new mongoose.Schema({
@@ -11,6 +10,10 @@ let articleSchema = new mongoose.Schema({
         type:String , 
         trim:true,
         required:true
+    },
+    author:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }
 })
 

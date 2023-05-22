@@ -1,7 +1,7 @@
 const User = require('../models/User');
 const Article = require('../models/Article');
 
-
+// ADD ARTICLE
 const addArticle = async(req,res)=>{
     let {userId} = req.params;
     let {title , description} = req.body;
@@ -18,35 +18,40 @@ const addArticle = async(req,res)=>{
     
     try{
         let userExists = await User.findById(userId);
-            //create a new article
-            let newArticle = new Article({
-                title:title,
-                description:description
-            })
-            // save the new article in article array of user
-            userExists.articles.push(newArticle);
+        //create a new article
+        let newArticle = new Article({
+            title:title,
+            description:description,
+            author:userExists
+        })
 
-            await newArticle.save();
-            await userExists.save();
-            res.json({
-                statusCode: 201,
-                data: newArticle, 
-                message:'Articelle created successfully',
-                error:null
-            })
+        // save the new article in article array of user
+        userExists.articles.push(newArticle);
+
+        await newArticle.save();
+        await userExists.save();
+        res.status(201).json({
+            statusCode: 201,
+            data: newArticle, 
+            message:'Article created successfully',
+            error:null
+        })
     }
     catch(e){
-        res.json({
-            error:'problem in findOne'
+        res.status(401).json({
+            statusCode: 401,
+            data: null, 
+            message:'cannot create a new article',
+            error:'SERVER_ERROR'
         })
     }
 }
 
 
-
+// ALL ARTICLES
 const allArticles = async(req,res)=>{
     try{
-        let allArticles = await Article.find({})
+        let allArticles = await Article.find({}).populate('author');
         res.status(200).json({
             statusCode: 200,
             data: allArticles, 

@@ -1,14 +1,15 @@
 const User = require('../models/User');
-let bcrypt =  require('bcrypt');
+const bcrypt =  require('bcrypt');
 const generateAuthToken = require('../jwtTokenGenerator');
 
 
+// SIGNUP
 const signup = async(req,res)=>{
     let user = req.body;
     // check if email already existed
     let Email = await User.findOne({email:user.email});
     if(Email){
-        return res.json({
+        return res.status(409).json({
             statusCode: 409,
             data: null, 
             message:'Email already exists',
@@ -25,7 +26,7 @@ const signup = async(req,res)=>{
             passWord: user.passWord
         })
         await dbUser.save(); //save user in db
-        return res.json({
+        return res.status(200).json({
             statusCode: 200,
             data: dbUser, 
             message:'You have successfully Signed up',
@@ -34,14 +35,14 @@ const signup = async(req,res)=>{
     }
 }
 
-
+// LOGIN
 const login = async(req,res)=>{
     let userFormData = req.body ;
-    // check if this email exist or not
+    // check if this email exist or not AND POPULATE with articles
     let userDBdata = await User.findOne({email:userFormData.email}).populate('articles');
-    console.log(userDBdata , 'populated') //remove comment
+    // console.log(userDBdata , '-passWord');
     if(!userDBdata){
-        return res.json({
+        return res.status(404).json({
             statusCode: 404,
             data: null, 
             message:'No such user with email is available, please check your email',
@@ -52,16 +53,21 @@ const login = async(req,res)=>{
         // match the passwords
         let validatePass = await bcrypt.compare(userFormData.passWord,userDBdata.passWord)
         if(!validatePass){
-            return res.json({
+            return res.status(401).json({
                 statusCode: 401,
                 data: null, 
                 message:'Password doesnot match, incorrect password',
-                error:null
+                error:'UNAUTHENTICATED_USER'
             })
         }
         // generate token
         let token = generateAuthToken(userDBdata);
-        return res.json({
+        // delete not important info for user
+        userDBdata = userDBdata.toObject();
+        delete userDBdata.passWord; //deleting password from login user
+        delete userDBdata.__v; //deleting __v from login user
+        
+        return res.status(200).json({
             statusCode: 200,
             data:{
                 token:token,
@@ -73,6 +79,7 @@ const login = async(req,res)=>{
     }
 }
 
+// EDIT USER
 const updateUser = async(req,res)=>{
 
     let {userId} = req.params;
@@ -92,7 +99,7 @@ const updateUser = async(req,res)=>{
         await User.findByIdAndUpdate(userId , {name , age});
         let updatedUser = await User.findById(userId);
         console.log(updatedUser , 'updated')
-        res.json({
+        res.status(200).json({
             statusCode: 200,
             data: updatedUser , 
             message:'Edited the user successfully',
@@ -100,7 +107,7 @@ const updateUser = async(req,res)=>{
         })
     }
     catch(e){
-        res.json({
+        res.status(200).json({
             statusCode: 200,
             data:null , 
             message:'Unable to edit the user',
