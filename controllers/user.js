@@ -24,8 +24,14 @@ const signup = async(req,res)=>{
             age:user.age,
             email:user.email.toLowerCase(),
             passWord: user.passWord
-        })
+        })   
         await dbUser.save(); //save user in db
+
+         // delete not important info for user
+         dbUser = dbUser.toObject();
+         delete dbUser.passWord; //deleting password from login user
+         delete dbUser.__v; //deleting __v from login user
+
         return res.status(200).json({
             statusCode: 200,
             data: dbUser, 
@@ -66,7 +72,7 @@ const login = async(req,res)=>{
         userDBdata = userDBdata.toObject();
         delete userDBdata.passWord; //deleting password from login user
         delete userDBdata.__v; //deleting __v from login user
-        
+
         return res.status(200).json({
             statusCode: 200,
             data:{
