@@ -9,7 +9,7 @@ const bodyParser = require('body-parser');
 
 
 mongoose.set('strictQuery' , true);
-mongoose.connect('mongodb://127.0.0.1:27017/sploot')
+mongoose.connect(process.env.MONGODB_URI) //env
 .then(()=>{console.log("db sploot connected")})
 .catch((err)=>{console.log(err)});
 
