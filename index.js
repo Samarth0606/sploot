@@ -25,8 +25,8 @@ app.get('/' , (req,res)=>{
     res.send('root route');
 })
 
-
-app.listen(8080 , ()=>{
+let port = process.env.PORT || 8080;
+app.listen(port , ()=>{
     console.log('server connected at port 8080')
 })
 
